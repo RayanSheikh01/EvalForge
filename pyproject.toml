@@ -1,0 +1,19 @@
+[project]
+name = "evalforge"
+version = "0.1.0"
+description = "A framework for defining, running, and scoring agentic tasks to measure agent reliability over time."
+requires-python = ">=3.10"
+dependencies = ["pyyaml"]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[project.scripts]
+evalforge = "evalforge.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
