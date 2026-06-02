@@ -1,2 +1,4 @@
 {"run_id": "r1", "task_id": "t1", "agent_name": "a1", "ts": "2024-01-01T00:00:00Z", "latency_ms": 123.45, "run": {"output": "hello"}, "scores": {"completion": 1.0}, "details": {"tool_calls": []}, "error": ""}
 {"run_id": "r1", "task_id": "t1", "agent_name": "a1", "ts": "2024-01-01T00:00:00Z", "latency_ms": 123.45, "run": {"output": "hello"}, "scores": {"completion": 1.0}, "details": {"tool_calls": []}, "error": ""}
+{"run_id": "r1", "task_id": "t1", "agent_name": "a1", "ts": "2024-01-01T00:00:00Z", "latency_ms": 123.45, "run": {"output": "hello"}, "scores": {"completion": 1.0}, "details": {"tool_calls": []}, "error": ""}
+{"run_id": "r1", "task_id": "t1", "agent_name": "a1", "ts": "2024-01-01T00:00:00Z", "latency_ms": 123.45, "run": {"output": "hello"}, "scores": {"completion": 1.0}, "details": {"tool_calls": []}, "error": ""}
