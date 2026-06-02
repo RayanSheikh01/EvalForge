@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional, Protocol
 @dataclass
 class ToolCall:
     name: str
-    args: Dict[]
+    args: Dict[str, Any]
     results: Any = None
     
 @dataclass
@@ -18,7 +18,7 @@ class AgentRun:
     tool_calls: List[ToolCall]
     token_usage: Optional[TokenUsage]
     latency_ms: float = 0.0
-    eror: str = ""
+    error: str = ""
     
 class Agent(Protocol):
     name: str
