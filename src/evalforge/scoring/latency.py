@@ -15,7 +15,7 @@ class LatencyScorer(Scorer):
             value=value,
             details={"latency_ms": latency},
         )
-        
 
+      
         
     
