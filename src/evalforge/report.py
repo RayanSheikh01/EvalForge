@@ -1,47 +1,39 @@
+import json
+import os
+import sqlite3
+
+
 def trends(out="results", task=None, agent=None) -> list[dict]:
+    """Return stored runs as dicts, ordered by (task_id, agent_name, ts).
+
+    Reads the SQLite ``runs`` table written by the store. The ``scores`` column
+    (JSON text) is expanded into a dict so callers can read per-run metrics
+    (e.g. completion) directly. Delta between consecutive runs is computed by
+    the caller.
     """
-    Generate a trends report for the given task and agent.
+    db_path = os.path.join(out, "results.db")
+    conn = sqlite3.connect(db_path)
+    conn.row_factory = sqlite3.Row
 
-    Args:
-        out: The output directory to save the report.
-        task: The task to generate the report for. If None, generates for all tasks.
-        agent: The agent to generate the report for. If None, generates for all agents.
-        
-    Returns:
-        A list of dictionaries containing the trends data.
-    """
-    import os
-    import json
-    from collections import defaultdict
-
-    # Load all runs from the output directory
-    runs = []
-    for filename in os.listdir(out):
-        if filename.endswith(".jsonl"):
-            with open(os.path.join(out, filename)) as f:
-                for line in f:
-                    runs.append(json.loads(line))
-
-    # Filter runs by task and agent if specified
+    sql = "SELECT * FROM runs WHERE 1=1"
+    params = []
     if task is not None:
-        runs = [r for r in runs if r["task_id"] == task]
+        sql += " AND task_id = ?"
+        params.append(task)
     if agent is not None:
-        runs = [r for r in runs if r["agent_name"] == agent]
+        sql += " AND agent_name = ?"
+        params.append(agent)
+    sql += " ORDER BY task_id, agent_name, ts"
 
-    # Aggregate trends data
-    trends_data = defaultdict(list)
-    for run in runs:
-        trends_data[run["task_id"]].append(run)
+    rows = conn.execute(sql, params).fetchall()
+    conn.close()
 
-    # Convert to list of dicts for output
-    report = []
-    for task_id, task_runs in trends_data.items():
-        report.append({
-            "task_id": task_id,
-            "num_runs": len(task_runs),
-            "average_latency_ms": sum(r["latency_ms"] for r in task_runs) / len(task_runs),
-            "average_score": sum(r["scores"].get("completion", 0) for r in task_runs) / len(task_runs),
-        })
-
-    return report
-
+    result = []
+    for r in rows:
+        d = dict(r)
+        try:
+            d["scores"] = json.loads(d["scores"]) if d.get("scores") else {}
+        except (TypeError, json.JSONDecodeError):
+            d["scores"] = {}
+        result.append(d)
+    return result

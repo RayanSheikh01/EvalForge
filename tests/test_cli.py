@@ -1,20 +1,20 @@
-import pytest
+from pathlib import Path
 
-# invoke cmd_run against example task + EchoAgent in tmp_path, assert files written.
+
+# invoke cmd_run against example task + EchoAgent, assert files written to out dir.
 
 def test_cli_run(tmp_path):
-    from src.evalforge.cli import cmd_run
+    from evalforge.cli import cmd_run
+
+    repo_root = Path(__file__).resolve().parent.parent
 
     class Args:
-        agent = "echo"
-        input = "Hello, EvalForge!"
-        output = str(tmp_path / "run_record.json")
+        agent = "adapters.example_echo:EchoAgent"
+        tasks = str(repo_root / "tasks" / "example_task.yaml")
+        out = str(tmp_path)
 
     cmd_run(Args())
 
-    assert (tmp_path / "run_record.json").exists(), "Run record file not found"
-    
-    
-    
-    
-    
+    jsonl_files = list(tmp_path.glob("*.jsonl"))
+    assert jsonl_files, "No JSONL run record written"
+    assert (tmp_path / "results.db").exists(), "SQLite results.db not found"

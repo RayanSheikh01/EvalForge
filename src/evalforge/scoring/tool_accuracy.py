@@ -1,6 +1,19 @@
 from evalforge.scoring.base import Score, Scorer
 
 
+def _arg_match(expected: dict, actual: dict) -> bool:
+    """Match expected arg matchers against actual call args.
+    A value of "*" means "any value, key must be present"; otherwise the
+    actual value must equal the expected value exactly."""
+    for k, v in expected.items():
+        if v == "*":
+            if k not in actual:
+                return False
+        elif actual.get(k) != v:
+            return False
+    return True
+
+
 class ToolAccuracyScorer(Scorer):
     name = "ToolAccuracyScorer"
 
@@ -13,7 +26,7 @@ class ToolAccuracyScorer(Scorer):
         matched = 0
         for exp in expected:
             for i, call in enumerate(actual):
-                if call.name == exp.name and call.args == exp.args:
+                if call.name == exp.name and _arg_match(exp.args, call.args):
                     matched += 1
                     del actual[i]
                     break
