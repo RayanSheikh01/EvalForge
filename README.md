@@ -58,12 +58,19 @@ evalforge report [--task ID] [--agent NAME] [--out DIR]
 Each run is scored by the registry in
 [src/evalforge/scoring/registry.py](src/evalforge/scoring/registry.py):
 
-| Scorer          | Meaning                                              |
-|-----------------|------------------------------------------------------|
-| `completion`    | 1.0 if output non-empty and contains expected strings|
-| `tool_accuracy` | fraction of expected tool calls matched              |
-| `latency`       | wall-clock run latency in ms (raw)                   |
-| `token_cost`    | estimated USD cost from token usage (raw)            |
+| Scorer          | Meaning                                                     |
+|-----------------|-------------------------------------------------------------|
+| `completion`    | 1.0 if output non-empty and contains expected strings       |
+| `tool_accuracy` | fraction of expected tool calls matched                     |
+| `latency`       | wall-clock run latency in ms (raw)                          |
+| `token_cost`    | estimated USD cost from token usage (raw)                   |
+| `judge`         | LLM-as-judge (local Ollama) graded 0..1 against a rubric    |
+| `hallucination` | fraction of asserted claims grounded in actual tool results |
+
+`judge` calls a local [Ollama](https://ollama.com) model — set by
+`EVALFORGE_JUDGE_MODEL` (default `llama3.2`). Ollama must be running for a
+non-zero `judge` score; if it is down or the model is missing, the run still
+completes and `judge` scores `0.0` with the error in its details.
 
 ## Writing an adapter
 
