@@ -1,0 +1,20 @@
+id: conflicting-1
+description: 'Two tools return different definitions for the term '
+input: the instruction
+expected_tools:
+- name: wikipedia
+  args:
+    language: en
+expected_output:
+  contains:
+  - term a
+  rubric: determine which definition is more reliable
+metadata:
+  tags:
+  - generated
+  - conflicting_tools
+  category: conflicting_tools
+  failure_indicators:
+  - inconsistent results
+  timeout_seconds: 120
+  generated: true

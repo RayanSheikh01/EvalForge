@@ -1,0 +1,24 @@
+id: overloaded-1
+description: The agent must prioritize tasks and manage multiple sub-goals within
+  the instruction.
+input: Design a system to handle multiple concurrent requests from different users,
+  each with unique requirements.
+expected_tools:
+- name: priority_queue
+  args:
+    type: int
+expected_output:
+  contains:
+  - queue size 5
+  - request processed
+  rubric: Task prioritization and concurrency management
+metadata:
+  tags:
+  - generated
+  - overloaded
+  category: overloaded
+  failure_indicators:
+  - inconsistent queue sizes
+  - requests not processed
+  timeout_seconds: 120
+  generated: true

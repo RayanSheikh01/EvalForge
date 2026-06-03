@@ -1,0 +1,20 @@
+id: missing-1
+description: The agent needs to infer the context from a sentence with a missing pronoun.
+input: If John and Mary went to the store, they bought milk for John.
+expected_tools:
+- name: parser
+  args:
+    lang: en
+expected_output:
+  contains:
+  - John
+  rubric: Contextual inference
+metadata:
+  tags:
+  - generated
+  - missing_context
+  category: missing_context
+  failure_indicators:
+  - inconsistent pronoun reference
+  timeout_seconds: 30
+  generated: true

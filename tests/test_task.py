@@ -1,6 +1,19 @@
 import pytest
 
 
+def test_load_tasks_recurses_into_subdirs(tmp_path):
+    from evalforge.task import load_tasks
+
+    top = tmp_path / "top.yaml"
+    top.write_text("id: top\ninput: hi\n")
+    sub = tmp_path / "generated"
+    sub.mkdir()
+    (sub / "nested.yaml").write_text("id: nested\ninput: yo\n")
+
+    ids = {t.id for t in load_tasks(str(tmp_path))}
+    assert ids == {"top", "nested"}
+
+
 def test_task_loading():
     from evalforge.task import Task
     tasks = Task.load_tasks('tasks/example_task.yaml')

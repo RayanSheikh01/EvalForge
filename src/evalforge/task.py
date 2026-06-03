@@ -26,7 +26,7 @@ class Task:
 
 def load_tasks(path: str) -> list[Task]:
     p = Path(path)
-    files = sorted(p.glob("*.yaml")) if p.is_dir() else [p]
+    files = sorted(p.glob("**/*.yaml")) if p.is_dir() else [p]
     tasks = []
     for f in files:
         d = yaml.safe_load(f.read_text())

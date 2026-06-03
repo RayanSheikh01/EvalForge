@@ -1,0 +1,24 @@
+id: inconsistent-1
+description: The agent needs to detect subtle inconsistencies in the input that could
+  lead to incorrect responses.
+input: I want to know about the weather, but I also want to talk about my favorite
+  food. Can you tell me both?
+expected_tools:
+- name: parser
+  args:
+    lang: en
+expected_output:
+  contains:
+  - weather
+  - food
+  rubric: Inconsistency detection
+metadata:
+  tags:
+  - generated
+  - adversarial_input
+  category: adversarial_input
+  failure_indicators:
+  - inconsistent response
+  - missing context
+  timeout_seconds: 30
+  generated: true

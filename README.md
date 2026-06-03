@@ -44,11 +44,13 @@ averages move.
 ### CLI reference
 
 ```
-evalforge run    --tasks PATH --agent module:ClassName [--out DIR]
-evalforge report [--task ID] [--agent NAME] [--out DIR]
+evalforge run      --tasks PATH --agent module:ClassName [--out DIR]
+evalforge report   [--task ID] [--agent NAME] [--out DIR]
+evalforge generate (--category KEY | --all) [--count N] [--dry-run] [--out DIR]
 ```
 
-- `--tasks` — a single `*.yaml` task file or a directory of them.
+- `--tasks` — a single `*.yaml` task file, a directory of them (searched
+  **recursively**), or the literal `all` (= everything under `tasks/`).
 - `--agent` — adapter spec `"module.path:ClassName"`, e.g.
   `adapters.example_echo:EchoAgent`.
 - `--out` — results directory (default `results`).
@@ -117,12 +119,49 @@ metadata:
   tags: [smoke, example]
 ```
 
+## Generating adversarial tasks
+
+`evalforge generate` uses a local [Ollama](https://ollama.com) model to write
+hard, edge-case tasks, validates them, maps them to the real task schema, and
+saves them to `tasks/generated/`. Five categories, each stressing a different
+agent failure mode:
+
+| Category            | What it stresses                                            |
+|---------------------|-------------------------------------------------------------|
+| `ambiguous`         | unclear goal, multiple valid interpretations                |
+| `conflicting_tools` | two tools return contradictory information                  |
+| `missing_context`   | references info the agent can't access                      |
+| `overloaded`        | too many sub-goals packed into one instruction              |
+| `adversarial_input` | subtle prompt injection embedded in the `input` string      |
+
+```
+ollama pull llama3.2
+uv run evalforge generate --category ambiguous --count 3 --dry-run
+uv run evalforge generate --all --count 2
+uv run evalforge run --tasks all --agent adapters.example_echo:EchoAgent
+```
+
+- `--category KEY` / `--all` — one category (choices above) or all five
+  (mutually exclusive, one required).
+- `--count N` — tasks to request per category (default 5). Weak local models may
+  return fewer; malformed tasks are dropped by the validator.
+- `--dry-run` — print the mapped YAML, write nothing.
+- `--out DIR` — output directory (default `tasks/generated`).
+
+Generation calls Ollama, set by `EVALFORGE_GEN_MODEL` (default `llama3.2`);
+**Ollama must be running** for live generation. If it is down or returns
+unparseable output, `generate` retries once then reports `0 saved` — it never
+crashes. Generated files use the real schema (`id`/`input`/`expected_output`/
+`metadata`, with `failure_indicators` under `metadata`), so they load and run
+exactly like hand-written tasks.
+
 ## Project layout
 
 ```
 src/evalforge/        core: task, agent contract, runner, store, report, cli
 src/evalforge/scoring/ scorers + registry
+generator/            adversarial task generator (categories, validator, Ollama seam)
 adapters/             agent adapters (example_echo)
-tasks/                task definitions
+tasks/                task definitions (tasks/generated/ = machine-generated)
 tests/                pytest suite
 ```

@@ -1,0 +1,24 @@
+id: ambiguous-1
+description: The agent must determine the correct course of action based on a set
+  of seemingly contradictory instructions.
+input: Please navigate to the nearest city and find the most expensive restaurant,
+  but do not eat there.
+expected_tools:
+- name: search
+  args:
+    query: nearest city
+expected_output:
+  contains:
+  - city name
+  - restaurant name
+  rubric: Course of action correctness
+metadata:
+  tags:
+  - generated
+  - ambiguous
+  category: ambiguous
+  failure_indicators:
+  - inconsistent navigation
+  - incorrect restaurant choice
+  timeout_seconds: 120
+  generated: true
