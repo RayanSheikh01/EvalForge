@@ -1,8 +1,10 @@
     
 
+import json
+import os
+
 import ollama
 
-from evalforge.agent import AgentRun
 from evalforge.scoring.base import Score
 
 
@@ -15,20 +17,29 @@ class JudgeScorer:
     name = "JudgeScorer"
 
     def score(self, task, agent_run) -> Score:
+        rubric = task.expected_output.get("rubric")
+        if not rubric:
+            return Score(name=self.name, value=1.0, details={"note": "no rubric"})
         messages = [
-            {"role": "system", "content": f"You are a helpful and precise assistant for checking the quality of the answer."},
+            {"role": "system", "content": "You are a strict grader. Given a rubric and "
+             "an agent's answer, return JSON {\"score\": <float 0..1>, \"reason\": <str>} "
+             "and nothing else."},
             {"role": "user", "content": f"""Question: {task.input}
-Answer: {agent_run.output}
-Please score the answer on a scale of 0 to 1, where 1 is a perfect answer and 0 is a completely wrong answer. Only provide the score as a number without any explanation."""},
+Rubric: {rubric}
+Answer: {agent_run.output}"""},
         ]
-        score_str = _chat("evalforge/judge", messages)
+        model = os.environ.get("EVALFORGE_JUDGE_MODEL", "llama3.2")
         try:
-            score_value = float(score_str.strip())
-        except ValueError:
-            score_value = 0.0  # Default to 0 if parsing fails
-        return Score(
-            name=self.name,
-            value=score_value,
-            details={"raw_score": score_str},
-        )
+            raw = _chat(model, messages)
+            data = json.loads(raw)
+            score_value = max(0.0, min(1.0, float(data["score"])))  # clamp to [0, 1]
+            return Score(
+                name=self.name,
+                value=score_value,
+                details={"reason": data.get("reason"), "model": model},
+            )
+        except Exception as e:
+            # Judge must never re-raise: a dead daemon / missing model would
+            # otherwise crash the whole run (runner.py:35). Degrade to 0.0.
+            return Score(name=self.name, value=0.0, details={"error": str(e), "model": model})
     
