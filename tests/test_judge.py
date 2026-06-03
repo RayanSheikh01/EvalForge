@@ -12,3 +12,6 @@ def test_judge(monkeypatch):
     agent_run = type("AgentRun", (), {"output": "2 + 2 is 4."})()
     score = scorer.score(task, agent_run)
     assert 0.0 <= score.value <= 1.0, f"Score value should be between 0 and 1, got {score.value}"
+
+
+
