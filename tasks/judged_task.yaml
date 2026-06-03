@@ -1,0 +1,17 @@
+id: echo_judged
+description: Echo agent restates the query; judge grades it and hallucination flags ungrounded claims.
+input: search for echo chambers
+expected_tools:
+  - name: web_search
+    args:
+      query: "*"
+expected_output:
+  contains:
+    - echo
+  rubric: The answer restates the user's query.
+  grounded_claims:
+    - echo chambers
+metadata:
+  tags:
+    - smoke
+    - judged
