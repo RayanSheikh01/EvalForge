@@ -1,5 +1,8 @@
 # Implementation notes (private)
-IMPLEMENTATION.md
+implementation.md
+implementation_v2.md
+implementation_v3.md
+generator_design.md
 
 # Python build / packaging
 *.egg-info/

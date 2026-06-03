@@ -35,3 +35,7 @@ def load_tasks(path: str) -> list[Task]:
         ]
         tasks.append(Task(**d))
     return tasks
+
+
+
+
