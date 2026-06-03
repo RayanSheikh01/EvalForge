@@ -14,7 +14,7 @@ def validate(task: Task) -> list[str]:
 
 def to_evalforge_yaml(task: dict, category_key: str) -> dict:
     return {
-        "id": task["task_id"],
+        "id": task["id"],
         "description": task["description"],
         "input": task["input"],
         "expected_tools": [
