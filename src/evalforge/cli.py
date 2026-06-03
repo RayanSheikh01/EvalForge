@@ -54,6 +54,40 @@ def cmd_report(a):
             f"{delta}"
         )
         prev[key] = completion
+    
+def cmd_generate(a):
+    from generator.generator import generate
+    from generator.validator import validate
+    from generator.validator import to_evalforge_yaml
+    from generator.categories import Category
+    category = Category(a.category, name=a.category, description="", guidance="")
+    model = a.model
+    tasks = generate(category, a.count, model)
+    for t in tasks:
+        print(f"Generated task: {t.id}")
+        errors = validate(t)
+        if errors:
+            print(f"Validation errors for task {t.id}: {errors}")
+        else:
+            print(f"Task {t.id} is valid.")
+            
+def cmd_run(a):
+    agent = _load_agent(a.agent)
+    tasks = load_tasks(a.tasks)
+    records = run_suite(agent, tasks)
+    for rec in records:
+        persist(rec, a.out)
+        s = rec.scores
+        print(
+            f"{rec.task_id}: "
+            f"completion={s.get('completion', 0):.2f} "
+            f"tool_accuracy={s.get('tool_accuracy', 0):.2f} "
+            f"latency_ms={s.get('latency', 0):.1f} "
+            f"cost_usd={s.get('token_cost', 0)}"
+        )
+
+
+
 
 
 def main():

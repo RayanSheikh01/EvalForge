@@ -12,20 +12,20 @@ def validate(task: Task) -> list[str]:
         
     return errors
 
-def to_evalforge_yaml(task: dict, category_key: str) -> dict:
+def to_evalforge_yaml(task: Task, category_key: str) -> dict:
     return {
-        "id": task["id"],
-        "description": task["description"],
-        "input": task["input"],
+        "id": [task.id],
+        "description": task.description,
+        "input": task.input,
         "expected_tools": [
-            {"name": tool["name"], "args": tool.get("args", {})}
-            for tool in task.get("expected_tools", [])
+            {"name": tool.name, "args": tool.args}
+            for tool in task.expected_tools
         ],
         "expected_output": {
-            "contains": task.get("expected_output_contains", [])
+            "contains": task.expected_output.get("contains", [])
         },
         "metadata": {
-            "failure_indicators": task.get("failure_indicators", []),
+            "failure_indicators": task.expected_output.get("failure_indicators", []),
             "category": category_key
         }
     }

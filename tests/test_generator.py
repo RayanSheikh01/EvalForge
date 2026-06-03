@@ -66,3 +66,5 @@ def test_generator(monkeypatch):
         assert isinstance(task.expected_output, dict), "Expected output should be a dict"
         assert isinstance(task.metadata, dict), "Metadata should be a dict"
         
+    
+    

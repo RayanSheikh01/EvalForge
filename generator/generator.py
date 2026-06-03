@@ -26,13 +26,24 @@ Make sure the 'id' is unique for each task and the 'input' is clear and unambigu
         {"role": "user", "content": user_prompt},
     ]
     
-def parse_tasks(raw: str) -> list[dict]:
+def parse_tasks(raw: str) -> list[Task]:
     import json
-    return json.loads(raw)
+    dict_tasks = json.loads(raw)
+    tasks = []
+    for task in dict_tasks:
+        tasks.append(Task(
+            id=task["id"],
+            input=task["input"],
+            description=task.get("description", ""),
+            expected_tools=[ExpectedTool(**tool) for tool in task.get("expected_tools", [])],
+            expected_output=task.get("expected_output", {}),
+            metadata=task.get("metadata", {})
+        ))
+    return tasks
 
 def generate(category: Category, count: int, model: str) -> list[Task]:
     messages = build_prompt(category, count)
-    raw = _chat(model, messages)
+    raw = _chat(model, messages, temperature=0)
     tasks = parse_tasks(raw)
     tasks = [to_evalforge_yaml(t, category.name) for t in tasks]
     valid_tasks = []

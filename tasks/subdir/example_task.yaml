@@ -1,0 +1,14 @@
+id: echo_web_search
+description: Echo agent should restate the input and call web_search once.
+input: search for echo chambers
+expected_tools:
+  - name: web_search
+    args:
+      query: "*"
+expected_output:
+  contains:
+    - echo
+metadata:
+  tags:
+    - smoke
+    - example
