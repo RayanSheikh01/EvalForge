@@ -54,7 +54,17 @@ def cmd_report(a):
             f"latency_ms={row['latency_ms']:.1f}"
             f"{delta}"
         )
-        prev[key] = completion
+    prompts = {}
+    for row in rows:
+        if row["prompt_version"] not in prompts:
+            prompts[row["prompt_version"]] = []
+        prompts[row["prompt_version"]].append(row)
+    # print delta for each prompt version
+    for prompt_version, runs in prompts.items():
+        avg_completion = sum(run["completion"] for run in runs) / len(runs)
+        prev_completion = prev.get(prompt_version, 0.0)
+        delta = avg_completion - prev_completion
+        print(f"{prompt_version}: {avg_completion:.2f} delta={delta:+.2f}")
     
 def cmd_generate(a):
     cats = all_categories() if a.all else [CATEGORIES[a.category]]

@@ -120,3 +120,35 @@ def get_active_content(prompt_name: str, out: str = "results") -> str:
     Convenience: return the content of the currently active version.
     """
     return get_version(get_active(prompt_name, out), out)["content"]
+
+def best_version(prompt_name: str, metric: str = "completion", out: str = "results") -> dict | None:
+    """
+    Query all runs linked to this prompt's versions.
+    Group by prompt_version, average the given metric.
+    Return the version dict with the highest average.
+    """
+    conn = connect(out)
+    c = conn.cursor()
+    c.execute(
+        """
+        SELECT v.hash, v.prompt_name, v.parent_hash, v.message,
+               v.author, v.timestamp, v.content, v.tags,
+               AVG(r.completion_score) AS avg_completion,
+               AVG(r.fluency_score) AS avg_fluency,
+               AVG(r.usefulness_score) AS avg_usefulness
+        FROM prompt_versions v
+        LEFT JOIN runs r ON v.hash = r.prompt_version
+        WHERE v.name = ?
+        GROUP BY v.hash, v.prompt_name, v.parent_hash, v.message,
+                 v.author, v.timestamp, v.content, v.tags
+        ORDER BY avg_completion DESC
+        LIMIT 1
+        """,
+        (prompt_name,),
+    )
+    row = c.fetchone()
+    if not row:
+        return None
+    col_names = [d[0] for d in c.description]
+    return dict(zip(col_names, row))
+    
