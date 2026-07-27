@@ -1,3 +1,8 @@
+from evalforge.prompts.vault import get_active_content
+import argparse
+from evalforge.prompts.store import list_prompts, set_active, get_active, get_version
+from evalforge.prompts.vault import commit_prompt, init_prompt, rollback_prompt, log_prompt
+from evalforge.prompts.diff import diff_versions
 import argparse
 import importlib
 import os
@@ -63,9 +68,11 @@ def cmd_run(a):
     # `--tasks all` means the whole tasks/ tree (recursive load picks up subdirs).
     tasks_path = "tasks" if a.tasks == "all" else a.tasks
     tasks = load_tasks(tasks_path)
-    records = run_suite(agent, tasks)
+    if a.prompt:
+        prompt = get_active_content(a.prompt, a.out)
+    records = run_suite(agent, tasks, prompt)
     for rec in records:
-        persist(rec, a.out)
+        persist(rec, a.out, prompt)
         s = rec.scores
         print(
             f"{rec.task_id}: "
@@ -77,6 +84,47 @@ def cmd_run(a):
 
 
 
+def cmd_prompt(a):
+    parser = argparse.ArgumentParser(description="Prompt management")
+    subparsers = parser.add_subparsers(dest="subcommand")
+    subparsers.add_parser("log", help="Log of a prompt")
+    subparsers.add_parser("show", help="Show a version of a prompt")
+    subparsers.add_parser("diff", help="Diff between two versions of a prompt")
+    subparsers.add_parser("rollback", help="Rollback a prompt to a version")
+    subparsers.add_parser("init", help="Initialize a prompt")
+    subparsers.add_parser("commit", help="Commit a prompt")
+    subparsers.add_parser("active", help="Get the active version of a prompt")
+    subparsers.add_parser("set-active", help="Set the active version of a prompt")
+    subparsers.add_parser("list", help="List all prompts")
+    subparsers.add_parser("set-active-content", help="Set the active content of a prompt")
+
+
+    if a.subcommand == "log":
+        for h in log_prompt(a.name, out=a.out):
+            print(h["hash"])
+    elif a.subcommand == "show":
+        v = get_version(a.hash, out=a.out)
+        print(v["content"])
+    elif a.subcommand == "diff":
+        print(diff_versions(a.hash1, a.hash2, out=a.out))
+    elif a.subcommand == "rollback":
+        rollback_prompt(a.name, a.hash, out=a.out)
+    elif a.subcommand == "init":
+        v = init_prompt(a.file, out=a.out)
+        print(v["hash"])
+    elif a.subcommand == "commit":
+        v = commit_prompt(a.name, a.file, message=a.message, out=a.out)
+        print(v["hash"])
+    elif a.subcommand == "active":
+        print(get_active(a.name, out=a.out))
+    elif a.subcommand == "set-active":
+        set_active(a.name, a.hash, out=a.out)
+    elif a.subcommand == "list":
+        for p in list_prompts(out=a.out):
+            print(p["name"])
+    else:
+        parser.print_help()
+
 
 
 def main():
@@ -87,6 +135,7 @@ def main():
     run_parser.add_argument("--tasks", required=True, help="Task file or directory")
     run_parser.add_argument("--agent", required=True, help="Agent spec 'module:ClassName'")
     run_parser.add_argument("--out", default="results", help="Output directory")
+    run_parser.add_argument("--prompt", default="", help="Prompt name")
     run_parser.set_defaults(fn=cmd_run)
 
     report_parser = subparsers.add_parser("report", help="Show scored trends")
