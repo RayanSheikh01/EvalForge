@@ -1,3 +1,4 @@
+from evalforge.prompts.diff import diff_versions
 from evalforge.prompts.vault import *
 import os
 import pytest
@@ -108,7 +109,6 @@ def test_list_prompts_empty_when_none_tracked(db):
     assert list_prompts(db) == []
 
 
-# ── Phase 2: vault.py tests ──────────────────────────────────────────
 
 def test_compute_hash_is_12_chars():
     h = compute_hash("hello world")
@@ -237,3 +237,21 @@ def test_full_workflow_init_commit_log_rollback(db, tmp_path):
 
     rollback_prompt("workflow", v1["hash"], out=db)
     assert get_active_content("workflow", out=db) == "v1"
+
+
+def test_diff_shows_additions(db, tmp_path):
+    f = tmp_path / "d.txt"
+    f.write_text("hello", encoding="utf-8")
+    v1 = init_prompt(str(f), out=db)
+    f.write_text("hello\nworld", encoding="utf-8")
+    v2 = commit_prompt("d", str(f), out=db)
+    result = diff_versions(v1["content"], v2["content"])
+    assert "+world" in result
+
+
+def test_diff_identical_empty(db, tmp_path):
+    f = tmp_path / "eq.txt"
+    f.write_text("same content", encoding="utf-8")
+    v = init_prompt(str(f), out=db)
+    result = diff_versions(v["content"], v["content"])
+    assert result == ""
