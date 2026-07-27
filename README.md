@@ -155,13 +155,74 @@ crashes. Generated files use the real schema (`id`/`input`/`expected_output`/
 `metadata`, with `failure_indicators` under `metadata`), so they load and run
 exactly like hand-written tasks.
 
+## Prompt Versioning
+
+EvalForge includes **PromptVault** — a built-in version-control system for
+prompts. Track every change, compare versions side-by-side, run A/B tests, and
+roll back to any previous version — all from the CLI.
+
+### Quick example
+
+```bash
+# 1. Start tracking a prompt file
+evalforge prompt init prompts/example_system.txt
+
+# 2. Edit the file, then commit the change
+evalforge prompt commit example_system prompts/example_system.txt -m "add citation rule"
+
+# 3. Run your eval suite tagged to the active prompt version
+evalforge run --tasks tasks/ --agent adapters.example_echo:EchoAgent --prompt example_system
+
+# 4. View version history
+evalforge prompt log example_system
+
+# 5. Roll back to an earlier version
+evalforge prompt rollback example_system <hash>
+```
+
+### A/B testing
+
+Compare two prompt versions head-to-head across your full task suite:
+
+```bash
+evalforge ab --agent adapters.example_echo:EchoAgent \
+             --prompt-a example_system \
+             --prompt-b example_system_v2 \
+             --tasks tasks/
+```
+
+This runs every task twice (once per prompt), persists all results, and prints a
+per-task comparison table showing the delta for each metric.
+
+### `prompt` subcommand reference
+
+| Subcommand               | Description                                     |
+|---------------------------|-------------------------------------------------|
+| `prompt init <file>`      | Start tracking a prompt file                    |
+| `prompt commit <name> <file> -m MSG` | Snapshot current file as a new version |
+| `prompt log <name>`       | Show version history for a prompt               |
+| `prompt show <hash>`      | Print the content of a specific version         |
+| `prompt diff <hash1> <hash2>` | Unified diff between two versions           |
+| `prompt rollback <name> <hash>` | Set active version (and rewrite file)      |
+| `prompt list`             | List all tracked prompts                        |
+| `prompt active <name>`    | Print the active version hash                   |
+| `prompt set-active <name> <hash>` | Manually set the active version          |
+
+### Backward compatibility
+
+The `--prompt` flag on `evalforge run` is **optional**. If omitted,
+`prompt_version` stays empty and behaviour is identical to before PromptVault
+was added — no existing workflows break.
+
 ## Project layout
 
 ```
-src/evalforge/        core: task, agent contract, runner, store, report, cli
+src/evalforge/         core: task, agent contract, runner, store, report, cli
 src/evalforge/scoring/ scorers + registry
-generator/            adversarial task generator (categories, validator, Ollama seam)
-adapters/             agent adapters (example_echo)
-tasks/                task definitions (tasks/generated/ = machine-generated)
-tests/                pytest suite
+src/evalforge/prompts/ prompt versioning (store, vault, diff, a/b testing)
+generator/             adversarial task generator (categories, validator, Ollama seam)
+adapters/              agent adapters (example_echo)
+tasks/                 task definitions (tasks/generated/ = machine-generated)
+prompts/               example prompt files
+tests/                 pytest suite
 ```
