@@ -1,3 +1,4 @@
+from evalforge.prompts.ab import run_ab
 from evalforge.prompts.vault import get_active_content
 import argparse
 from evalforge.prompts.store import list_prompts, set_active, get_active, get_version
@@ -152,6 +153,14 @@ def main():
     gen_parser.add_argument("--dry-run", action="store_true", help="Print, do not write")
     gen_parser.add_argument("--out", default="tasks/generated", help="Output directory")
     gen_parser.set_defaults(fn=cmd_generate)
+
+    ab_parser = subparsers.add_parser("ab", help="A/B test two prompts")
+    ab_parser.add_argument("--agent", required=True, help="Agent spec 'module:ClassName'")
+    ab_parser.add_argument("--prompt-a", required=True, help="Prompt A name")
+    ab_parser.add_argument("--prompt-b", required=True, help="Prompt B name")
+    ab_parser.add_argument("--tasks", default="tasks", help="Task file or directory")
+    ab_parser.add_argument("--out", default="results", help="Output directory")
+    ab_parser.set_defaults(fn=run_ab)
 
     args = parser.parse_args()
     if getattr(args, "fn", None):
