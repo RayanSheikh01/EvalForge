@@ -54,6 +54,8 @@ def cmd_report(a):
             f"latency_ms={row['latency_ms']:.1f}"
             f"{delta}"
         )
+    prev[key] = completion 
+    
     prompts = {}
     for row in rows:
         if row["prompt_version"] not in prompts:
