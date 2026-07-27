@@ -1,13 +1,13 @@
 from evalforge.prompts.diff import diff_versions
 from evalforge.task import load_tasks
-from evalforge.cli import _load_agent
+from evalforge.agent_loader import load_agent
 from evalforge.store import persist
 from evalforge.runner import run_suite
-from evalforge.prompts.store import get_active_content
+from evalforge.prompts.vault import get_active_content
 
 def run_ab(agent_spec: str, prompt_a: str, prompt_b: str,
            tasks_path: str, out: str = "results") -> dict:
-     """
+    """
     Run the full task suite twice — once per prompt version.
     
     1. Resolve prompt_a and prompt_b to their active hashes (or treat as hashes directly)
@@ -22,7 +22,7 @@ def run_ab(agent_spec: str, prompt_a: str, prompt_b: str,
          }
        }
     """
-    agent = _load_agent(agent_spec)
+    agent = load_agent(agent_spec)
     tasks = load_tasks(tasks_path)
     hash_a = get_active_content(prompt_a, out)
     hash_b = get_active_content(prompt_b, out)

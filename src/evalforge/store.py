@@ -44,7 +44,7 @@ SCHEMA = """CREATE TABLE IF NOT EXISTS runs (
     scores TEXT,
     details TEXT,
     error TEXT,
-    prompt_version TEXT DEFAULT '',
+    prompt_version TEXT DEFAULT ''
 )"""
 
 
@@ -59,7 +59,7 @@ def upsert(rec, out):
     conn = _db(out)
     d = _to_dict(rec)
     conn.execute(
-        "INSERT OR REPLACE INTO runs VALUES (?,?,?,?,?,?,?,?,?)",
+        "INSERT OR REPLACE INTO runs VALUES (?,?,?,?,?,?,?,?,?,?)",
         (
             d["run_id"],
             d["task_id"],

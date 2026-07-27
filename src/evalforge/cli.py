@@ -1,14 +1,12 @@
-from evalforge.prompts.ab import run_ab
-from evalforge.prompts.vault import get_active_content
 import argparse
-from evalforge.prompts.store import list_prompts, set_active, get_active, get_version
-from evalforge.prompts.vault import commit_prompt, init_prompt, rollback_prompt, log_prompt
-from evalforge.prompts.diff import diff_versions
-import argparse
-import importlib
 import os
 import sys
 
+from evalforge.agent_loader import load_agent
+from evalforge.prompts.ab import run_ab
+from evalforge.prompts.vault import get_active_content, commit_prompt, init_prompt, rollback_prompt, log_prompt
+from evalforge.prompts.store import list_prompts, set_active, get_active, get_version
+from evalforge.prompts.diff import diff_versions
 from evalforge.task import load_tasks
 from evalforge.runner import run_suite
 from evalforge.store import persist
@@ -21,20 +19,6 @@ if _cwd not in sys.path:
     sys.path.insert(0, _cwd)
 
 from generator import run_generation, CATEGORIES, all_categories
-
-
-def _load_agent(spec):
-    """spec is "module.path:ClassName" — import and instantiate."""
-    module_name, _, cls_name = spec.partition(":")
-    if not cls_name:
-        raise ValueError(f"Agent spec must be 'module:ClassName', got: {spec!r}")
-    # Resolve repo-root adapters (e.g. "adapters.example_echo") when invoked
-    # from the repo root — CWD is not on sys.path under console scripts / uv run.
-    cwd = os.getcwd()
-    if cwd not in sys.path:
-        sys.path.insert(0, cwd)
-    mod = importlib.import_module(module_name)
-    return getattr(mod, cls_name)()
 
 
 
@@ -77,15 +61,16 @@ def cmd_generate(a):
 
 
 def cmd_run(a):
-    agent = _load_agent(a.agent)
+    agent = load_agent(a.agent)
     # `--tasks all` means the whole tasks/ tree (recursive load picks up subdirs).
     tasks_path = "tasks" if a.tasks == "all" else a.tasks
     tasks = load_tasks(tasks_path)
-    if a.prompt:
+    prompt = ""
+    if getattr(a, "prompt", ""):
         prompt = get_active_content(a.prompt, a.out)
-    records = run_suite(agent, tasks, prompt)
+    records = run_suite(agent, tasks, prompt_version=prompt)
     for rec in records:
-        persist(rec, a.out, prompt)
+        persist(rec, a.out)
         s = rec.scores
         print(
             f"{rec.task_id}: "
