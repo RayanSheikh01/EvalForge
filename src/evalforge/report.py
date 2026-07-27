@@ -3,7 +3,7 @@ import os
 import sqlite3
 
 
-def trends(out="results", task=None, agent=None) -> list[dict]:
+def trends(out="results", task=None, agent=None, prompt_version=None) -> list[dict]:
     """Return stored runs as dicts, ordered by (task_id, agent_name, ts).
 
     Reads the SQLite ``runs`` table written by the store. The ``scores`` column
@@ -23,6 +23,9 @@ def trends(out="results", task=None, agent=None) -> list[dict]:
     if agent is not None:
         sql += " AND agent_name = ?"
         params.append(agent)
+    if prompt_version is not None:
+        sql += " AND prompt_version = ?"
+        params.append(prompt_version)
     sql += " ORDER BY task_id, agent_name, ts"
 
     rows = conn.execute(sql, params).fetchall()

@@ -18,9 +18,10 @@ class RunRecord:
     scores: dict = field(default_factory=dict)
     details: dict = field(default_factory=dict)
     error: str = ""
+    prompt_version: str = ""
 
 
-def run_task(agent, task, scorers=DEFAULT_SCORERS) -> RunRecord:
+def run_task(agent, task, scorers=DEFAULT_SCORERS, prompt_version: str = "") -> RunRecord:
     t0 = time.perf_counter()
     error = ""
     try:
@@ -48,8 +49,9 @@ def run_task(agent, task, scorers=DEFAULT_SCORERS) -> RunRecord:
         scores=scores,
         details=details,
         error=error,
+        prompt_version=prompt_version,
     )
 
 
-def run_suite(agent, tasks, scorers=DEFAULT_SCORERS) -> list[RunRecord]:
-    return [run_task(agent, t, scorers) for t in tasks]
+def run_suite(agent, tasks, scorers=DEFAULT_SCORERS, prompt_version: str = "") -> list[RunRecord]:
+    return [run_task(agent, t, scorers, prompt_version) for t in tasks]

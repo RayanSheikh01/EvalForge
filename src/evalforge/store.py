@@ -13,6 +13,7 @@ FIELDS = [
     "scores",
     "details",
     "error",
+    "prompt_version",
 ]
 
 
@@ -42,7 +43,8 @@ SCHEMA = """CREATE TABLE IF NOT EXISTS runs (
     run TEXT,
     scores TEXT,
     details TEXT,
-    error TEXT
+    error TEXT,
+    prompt_version TEXT DEFAULT '',
 )"""
 
 
@@ -68,6 +70,7 @@ def upsert(rec, out):
             json.dumps(d["scores"], default=str),
             json.dumps(d["details"], default=str),
             d["error"],
+            d["prompt_version"],
         ),
     )
     conn.commit()
