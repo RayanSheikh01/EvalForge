@@ -47,3 +47,5 @@ Thumbs.db
 .env
 .env.*
 !.env.example
+implementation_v4.md
+prompt_registry_design.md
